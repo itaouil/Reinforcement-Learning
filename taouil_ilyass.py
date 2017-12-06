@@ -1,3 +1,6 @@
+#!/usr/bin/env/python
+# -*- coding: utf-8 -*-
+
 """
     Reinforcement Learning.
 """
@@ -164,21 +167,47 @@ def env_reward(s, a):
         Returns:
             int: reward for the given state-action pair
     """
-    # Move
-    move = actions(a)
-
     # New state
-    reward_state = (s[0] + move[0], s[1] + move[1])
+    reward_state = env_move_det(s, a)
+    return states()[reward_state[0]][reward_state[1]]
 
-    # Check if action in the state is valid
-    if reward_state[0] in range(cf.data['X']) and reward_state[1] in range(cf.data['Y']):
-        return states[reward_state[0], reward_state[1]]
+def agt_choose(s, epsilon):
+    """
+        Performs an ε policy where
+        with probability 1 - ε the
+        optimal policy is chosen and
+        where with ε a random action
+        is chosen otherwise.
+
+        Arguments:
+            param1: currrent state
+            param2: epsilon
+
+        Returns:
+            str: action to take
+    """
+    # Evaluates the greedy policy
+    if (random(1, 11) / 10.0) <= 1 - epsilon:
+
+        # Policies array
+        policies = []
+
+        # Compute all possible policies
+        # given the current state
+        for a in cf.data['actions']:
+            policies.append(env_reward(s, a))
+
+        # Return best action
+        return cf.data['actions'][policies.index(max(policies))]
+    else:
+        return cf.data['actions'][random(0, 4)]
 
 def main():
     print("States:", states())
     print("Action: Up", actions('up'))
     print("Deterministic state: ", env_move_det((0, 5), 'up'))
-    print("Stochastic state: ", env_move_det((0, 4), 'left'))
+    print("Stochastic state: ", env_move_sto((0, 4), 'left'))
+    print("Agent choose: ", agt_choose((1, 3), 0.3))
 
 if __name__ == '__main__':
     main()
