@@ -241,8 +241,29 @@ def agt_learn_sarsa(alpha, s, a, r, next_s, next_a):
     # Action index
     a_index = cf.data['actions'].index(a)
 
-    # Update sarsa, baby !
+    # Update sarsa's values, baby !
     QVAL[key_curr][a_index] = (1 - alpha) * QVAL[key_curr][a_index] + alpha * (r + cf.data['gamma'] * QVAL[key_next][next_a])
+
+def agt_learn_q(alpha, s, a, r, next_s):
+    """
+        Sarsa algorithm implementation.
+
+        Arguments:
+            param1: alpha
+            param2: current state
+            param3: action
+            param4: reward
+            param5: next state
+    """
+    # Convert current state to key (for dictionary check)
+    key_curr = ''.join(s)
+    key_next = ''.join(next_s)
+
+    # Action index
+    a_index = cf.data['actions'].index(a)
+
+    # Update qlearning's values, baby !
+    QVAL[key][a_index] = (1 - alpha) * QVAL[key][a_index] + alpha * (r + cf.data['gamma'] * max(QVAL[key_next]))
 
 def main():
     create_domain()
