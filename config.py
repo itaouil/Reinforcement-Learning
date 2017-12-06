@@ -15,6 +15,11 @@ data = {
     # Grid boundaries
     'X'         : 4,
     'Y'         : 6,
-    'actions'   : ['up', 'down', 'left', 'right']
+
+    # Set of actions
+    'actions'   : ['up', 'down', 'left', 'right'],
+
+    # Gamma value
+    'gamma'     : 0.99
 
 }

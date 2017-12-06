@@ -12,7 +12,9 @@ import numpy as np
 # Import config file
 import config as cf
 
-""" Environment implementation """
+# Global variables
+QVAL    = {}
+STATES  = []
 
 def random(low, high):
     """
@@ -47,7 +49,7 @@ def get_ortogonal_move(a):
         'left'  : ['up', 'down']
     }[a]
 
-def states():
+def create_domain():
     """
         The routine creates a 4 x 6 numpy
         matrix and intialises the various
@@ -57,17 +59,35 @@ def states():
         Returns:
             numpy array: states
     """
+    global STATES
+
     # Create initial states
-    states = np.zeros((cf.data['X'], cf.data['Y']))
+    STATES = np.zeros((cf.data['X'], cf.data['Y']))
 
     # Add start, goal and obstacles
-    states[0, 4] = 100
-    states[1, 2] = -10
-    states[1, 5] = -100
-    states[2, 0] = -100
-    states[3, 4] = -10
+    STATES[0, 4] = 100
+    STATES[1, 2] = -10
+    STATES[1, 5] = -100
+    STATES[2, 0] = -100
+    STATES[3, 4] = -10
 
-    return states
+def create_qvalues():
+    """
+        The routine creates the qvalues numpy
+        array which gets updated in the SARSA
+        and QLEARNING algorithms.
+
+        Returns:
+            numpy array: qvalues
+    """
+    global QVAL
+
+    # Create a dictionary contaning
+    # our values for the SARSA and
+    # QLEARNING algorithms
+    for row in range(0, cf.data['X']):
+        for col in range(0, cf.data['Y']):
+            QVAL[str(row) + str(col)] = random(100, 200)
 
 def actions(a):
     """
@@ -163,13 +183,14 @@ def env_reward(s, a):
         Arguments:
             param1: current state
             param2: action
+            param3: domain (game states)
 
         Returns:
             int: reward for the given state-action pair
     """
     # New state
     reward_state = env_move_det(s, a)
-    return states()[reward_state[0]][reward_state[1]]
+    return STATES[reward_state[0]][reward_state[1]]
 
 def agt_choose(s, epsilon):
     """
@@ -187,7 +208,7 @@ def agt_choose(s, epsilon):
             str: action to take
     """
     # Evaluates the greedy policy
-    if (random(1, 11) / 10.0) <= 1 - epsilon:
+    if (random(1, 11) / 10.0) < 1 - epsilon:
 
         # Policies array
         policies = []
@@ -202,8 +223,25 @@ def agt_choose(s, epsilon):
     else:
         return cf.data['actions'][random(0, 4)]
 
+def agt_learn_sarsa(alpha, s, a, r, next_s, next_a):
+    """
+        Sarsa algorithm implementation.
+
+        Arguments:
+            param1: alpha
+            param2: current state
+            param3: reward
+            param4: next state
+            param5: next action
+    """
+    # Convert current state to key (for dictionary check)
+
+
+
 def main():
-    print("States:", states())
+    create_domain()
+    create_qvalues()
+    print("States and QValues created...")
     print("Action: Up", actions('up'))
     print("Deterministic state: ", env_move_det((0, 5), 'up'))
     print("Stochastic state: ", env_move_sto((0, 4), 'left'))
