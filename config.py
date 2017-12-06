@@ -17,7 +17,7 @@ data = {
     'Y'         : 6,
 
     # Set of actions
-    'actions'   : ['up', 'down', 'left', 'right'],
+    'actions'   : ['up', 'down', 'right', 'left'],
 
     # Gamma value
     'gamma'     : 0.99
