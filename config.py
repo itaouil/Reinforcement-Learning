@@ -20,6 +20,12 @@ data = {
     'actions'   : ['up', 'down', 'right', 'left'],
 
     # Gamma value
-    'gamma'     : 0.99
+    'gamma'     : 0.99,
+
+    # Epochs
+    'epochs'     : 500,
+
+    # Episodes
+    'episodes'  : 500
 
 }

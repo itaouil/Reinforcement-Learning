@@ -284,14 +284,46 @@ def agt_learn_final(alpha, s, a, r):
     # Update
     QVAL[key][a_index] = (1 - alpha) * QVAL[key][a_index] + alpha * r
 
+def agt_reset_value():
+    """
+        Resets the action-value function
+        to random values.
+    """
+    create_qvalues()
+
 def main():
+    # Intialise domain
+    # and state-action
+    # value pairs
     create_domain()
     create_qvalues()
-    print("States and QValues created...")
-    print("Action: Up", actions('up'))
-    print("Deterministic state: ", env_move_det((0, 5), 'up'))
-    print("Stochastic state: ", env_move_sto((0, 4), 'left'))
-    print("Agent choose: ", agt_choose((1, 3), 0.3))
+
+    for epoch in range(cf.data['epochs']):
+
+        agt_reset_value()
+
+        for episode in range(cf.data['episodes']):
+
+            learning = episode < cf.data['episodes'] - 50
+            eps = Epsilon if learning else 0
+            cumulative_gamma = 1
+            s = initial_state
+            a = agt_choose(s, eps)
+
+            for timestep in range(T):
+                next_s = env_move_det(s, a)
+                r = env_reward(s, a, next_s)
+                rewards[episode] += (cumulative_gamma *r) / EPOCHS
+                cumulative_gamma *= gamma
+                next_a = agt_choose(next_s)
+                if learning:
+                    if next_s is absorbing OR timestep == T-1:
+                        agt_learn_final(alpha,s,a,r)
+                    else:
+                        agt_learn_{sarsa,q}(alpha, s,a,r,next_s{,next_a})
+
+                a = next_a
+                s = next_s
 
 if __name__ == '__main__':
     main()
