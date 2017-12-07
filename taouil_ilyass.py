@@ -89,7 +89,7 @@ def create_qvalues():
     # QLEARNING algorithms
     for row in range(cf.data['X']):
         for col in range(cf.data['Y']):
-            QVAL[str(row) + str(col)] = np.random.uniform(150, 200, 4)
+            QVAL[str(row) + str(col)] = [110, 110, 110, 110]
 
 def actions(a):
     """
@@ -154,28 +154,15 @@ def env_move_sto(s, a):
         Returns:
             tuple: robot's current x and y position in the grid
     """
-    # Get state movement
-    move = actions(a)
-
-    # Probabilities
-    prob, ort_prob = random(1, 11) / 10.0, random(0, 1)
-
     # New state
-    if prob <= 0.8:
-        new_state = (s[0] + move[0], s[1] + move[1])
+    if random(1, 11) / 10.0 <= 0.8:
+        new_state = env_move_det(s, a)
     else:
         # Random ortogonal move
         new_action = get_ortogonal_move(a)[random(0, 2)]
-        new_move = actions(new_action)
-        new_state = (s[0] + new_move[0], s[1] + new_move[1])
+        new_state = env_move_det(s, new_action)
 
-    # Check that move does not overflow
-    # and return it, otherwise return the
-    # current state
-    if new_state[0] in range(cf.data['X']) and new_state[1] in range(cf.data['Y']):
-        return new_state
-    else:
-        return s
+    return new_state
 
 def env_reward(s, a):
     """
@@ -192,7 +179,8 @@ def env_reward(s, a):
     """
     # New state
     reward_state = env_move_det(s, a)
-    return STATES[reward_state[0]][reward_state[1]]
+    print(reward_state[0], reward_state[1])
+    # return STATES[reward_state[0]][reward_state[1]]
 
 def agt_choose(s, epsilon):
     """
@@ -210,7 +198,7 @@ def agt_choose(s, epsilon):
             str: action to take
     """
     # Evaluates the greedy policy
-    if (random(1, 11) / 10.0) <= 1 - epsilon:
+    if random(1, 11) / 10.0 <= 1 - epsilon:
 
         # Policies array
         policies = []
@@ -298,46 +286,54 @@ def main():
     # Intialise domain
     # and state-action
     # value pairs
-    create_domain()
-    create_qvalues()
+    # create_domain()
+    # create_qvalues()
+    #
+    # # Clear rewards
+    # rewards = [0 for x in range(cf.data['episodes'])]
+    #
+    # for epoch in range(cf.data['epochs']):
+    #     print(epoch)
+    #     agt_reset_value()
+    #
+    #     for episode in range(cf.data['episodes']):
+    #
+    #         learning = episode < cf.data['episodes'] - 50
+    #         eps = cf.data['epsilon'] if learning else 0
+    #         cumulative_gamma = 1
+    #         s = (3, 0)
+    #         a = agt_choose(s, eps)
+    #
+    #         for timestep in range(2 * cf.data['T']):
+    #             next_s = env_move_det(s, a)
+    #             # next_s = env_move_sto(s, a)
+    #             r = env_reward(s, a)
+    #             rewards[episode] += (cumulative_gamma * r) / cf.data['epochs']
+    #             cumulative_gamma *= cf.data['gamma']
+    #             next_a = agt_choose(next_s, eps)
+    #             if learning:
+    #                 if STATES[next_s[0], next_s[1]] == 100 or timestep == cf.data['T'] - 1:
+    #                     agt_learn_final(cf.data['alpha'], s, a, r)
+    #                 else:
+    #                     agt_learn_sarsa(cf.data['alpha'], s, a, r, next_s, next_a)
+    #                     # agt_learn_q(cf.data['alpha'], s, a, r, next_s)
+    #
+    #             a = next_a
+    #             s = next_s
+    #             # print(rewards)
+    #
+    # print(rewards)
+    # plt.plot(rewards)
+    # plt.axis('equal')
+    # plt.show()
 
-    # Clear rewards
-    rewards = [0 for x in range(cf.data['epochs'])]
-
-    for epoch in range(cf.data['epochs']):
-        print(epoch)
-        agt_reset_value()
-
-        for episode in range(cf.data['episodes']):
-
-            learning = episode < cf.data['episodes'] - 50
-            eps = cf.data['epsilon'] if learning else 0
-            cumulative_gamma = 1
-            s = (3, 0)
-            a = agt_choose(s, eps)
-
-            for timestep in range(2 * cf.data['T']):
-                next_s = env_move_det(s, a)
-                # next_s = env_move_sto(s, a)
-                r = env_reward(s, a)
-                rewards[episode] += (cumulative_gamma * r) / cf.data['epochs']
-                cumulative_gamma *= cf.data['gamma']
-                next_a = agt_choose(next_s, eps)
-                if learning:
-                    if STATES[next_s[0], next_s[1]] == 100 or timestep == cf.data['T'] - 1:
-                        agt_learn_final(cf.data['alpha'], s, a, r)
-                    else:
-                        agt_learn_sarsa(cf.data['alpha'], s, a, r, next_s, next_a)
-                        # agt_learn_q(cf.data['alpha'], s, a, r, next_s)
-
-                a = next_a
-                s = next_s
-                # print(rewards)
-
-    print(rewards)
-    plt.plot(rewards)
-    plt.axis('equal')
-    plt.show()
+    print("ORTOGONAL: ", get_ortogonal_move('down'))
+    print("STATES: ", STATES)
+    print("QVALUES: ", QVAL)
+    print("DET MOVE: ", env_move_det((0, 5), 'down'))
+    print("STO MOVE: ", env_move_sto((0, 5), 'down'))
+    print("ENV REWARD: ", env_reward((0, 5), 'left'))
+    print("AGT CHOOSE: ", agt_choose((0, 5), 0.1))
 
 if __name__ == '__main__':
     main()
