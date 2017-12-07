@@ -7,7 +7,9 @@
 
 # Import modules
 import math
+import time
 import numpy as np
+import matplotlib.pyplot as plt
 
 # Import config file
 import config as cf
@@ -85,9 +87,9 @@ def create_qvalues():
     # Create a dictionary contaning
     # our values for the SARSA and
     # QLEARNING algorithms
-    for row in range(0, cf.data['X']):
-        for col in range(0, cf.data['Y']):
-            QVAL[str(row) + str(col)] = random(100, 200)
+    for row in range(cf.data['X']):
+        for col in range(cf.data['Y']):
+            QVAL[str(row) + str(col)] = np.random.uniform(150, 200, 4)
 
 def actions(a):
     """
@@ -208,7 +210,7 @@ def agt_choose(s, epsilon):
             str: action to take
     """
     # Evaluates the greedy policy
-    if (random(1, 11) / 10.0) < 1 - epsilon:
+    if (random(1, 11) / 10.0) <= 1 - epsilon:
 
         # Policies array
         policies = []
@@ -235,14 +237,15 @@ def agt_learn_sarsa(alpha, s, a, r, next_s, next_a):
             param5: next action
     """
     # Convert current state to key (for dictionary check)
-    key_curr = ''.join(s)
-    key_next = ''.join(next_s)
+    key_curr = str(s[0]) + str(s[1])
+    key_next = str(next_s[0]) + str(next_s[1])
 
     # Action index
-    a_index = cf.data['actions'].index(a)
+    curr_a_index = cf.data['actions'].index(a)
+    next_a_index = cf.data['actions'].index(next_a)
 
     # Update sarsa's values, baby !
-    QVAL[key_curr][a_index] = (1 - alpha) * QVAL[key_curr][a_index] + alpha * (r + cf.data['gamma'] * QVAL[key_next][next_a])
+    QVAL[key_curr][curr_a_index] = (1 - alpha) * QVAL[key_curr][curr_a_index] + alpha * (r + cf.data['gamma'] * QVAL[key_next][next_a_index])
 
 def agt_learn_q(alpha, s, a, r, next_s):
     """
@@ -256,8 +259,8 @@ def agt_learn_q(alpha, s, a, r, next_s):
             param5: next state
     """
     # Convert current state to key (for dictionary check)
-    key_curr = ''.join(s)
-    key_next = ''.join(next_s)
+    key_curr = str(s[0]) + str(s[1])
+    key_next = str(next_s[0]) + str(next_s[1])
 
     # Action index
     a_index = cf.data['actions'].index(a)
@@ -276,7 +279,7 @@ def agt_learn_final(alpha, s, a, r):
             param4: reward
     """
     # Convert current state to key (for dictionary check)
-    key = ''.join(s)
+    key = str(s[0]) + str(s[1])
 
     # Action index
     a_index = cf.data['actions'].index(a)
@@ -298,32 +301,43 @@ def main():
     create_domain()
     create_qvalues()
 
-    for epoch in range(cf.data['epochs']):
+    # Clear rewards
+    rewards = [0 for x in range(cf.data['epochs'])]
 
+    for epoch in range(cf.data['epochs']):
+        print(epoch)
         agt_reset_value()
 
         for episode in range(cf.data['episodes']):
 
             learning = episode < cf.data['episodes'] - 50
-            eps = Epsilon if learning else 0
+            eps = cf.data['epsilon'] if learning else 0
             cumulative_gamma = 1
-            s = initial_state
+            s = (3, 0)
             a = agt_choose(s, eps)
 
-            for timestep in range(T):
+            for timestep in range(2 * cf.data['T']):
                 next_s = env_move_det(s, a)
-                r = env_reward(s, a, next_s)
-                rewards[episode] += (cumulative_gamma *r) / EPOCHS
-                cumulative_gamma *= gamma
-                next_a = agt_choose(next_s)
+                # next_s = env_move_sto(s, a)
+                r = env_reward(s, a)
+                rewards[episode] += (cumulative_gamma * r) / cf.data['epochs']
+                cumulative_gamma *= cf.data['gamma']
+                next_a = agt_choose(next_s, eps)
                 if learning:
-                    if next_s is absorbing OR timestep == T-1:
-                        agt_learn_final(alpha,s,a,r)
+                    if STATES[next_s[0], next_s[1]] == 100 or timestep == cf.data['T'] - 1:
+                        agt_learn_final(cf.data['alpha'], s, a, r)
                     else:
-                        agt_learn_{sarsa,q}(alpha, s,a,r,next_s{,next_a})
+                        agt_learn_sarsa(cf.data['alpha'], s, a, r, next_s, next_a)
+                        # agt_learn_q(cf.data['alpha'], s, a, r, next_s)
 
                 a = next_a
                 s = next_s
+                # print(rewards)
+
+    print(rewards)
+    plt.plot(rewards)
+    plt.axis('equal')
+    plt.show()
 
 if __name__ == '__main__':
     main()
