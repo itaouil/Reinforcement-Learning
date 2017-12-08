@@ -23,10 +23,10 @@ data = {
     'gamma'     : 0.99,
 
     # Epochs
-    'epochs'     : 20,
+    'epochs'    : 500,
 
     # Episodes
-    'episodes'  : 500,
+    'episodes'  : 800,
 
     'epsilon'   : 0.1,
 
