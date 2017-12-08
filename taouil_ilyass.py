@@ -15,7 +15,8 @@ import matplotlib.pyplot as plt
 import config as cf
 
 # Global variables
-QVAL    = {}
+QVALS   = {}
+QVALQ   = {}
 STATES  = []
 
 def random(low, high):
@@ -72,6 +73,8 @@ def create_domain():
     STATES[1, 5] = -100
     STATES[2, 0] = -100
     STATES[3, 4] = -10
+    # STATES[2, 3] = 10
+    # STATES[2, 1] = -5
 
 def create_qvalues():
     """
@@ -82,14 +85,16 @@ def create_qvalues():
         Returns:
             numpy array: qvalues
     """
-    global QVAL
+    global QVALS
+    global QVALQ
 
     # Create a dictionary contaning
     # our values for the SARSA and
     # QLEARNING algorithms
     for row in range(cf.data['X']):
         for col in range(cf.data['Y']):
-            QVAL[str(row) + str(col)] = [120, 120, 120, 120]
+            QVALS[str(row) + str(col)] = [200, 200, 200, 200]
+            QVALQ[str(row) + str(col)] = [200, 200, 200, 200]
 
 def actions(a):
     """
@@ -111,6 +116,27 @@ def actions(a):
         'right' : (0, 1),
         'left'  : (0, -1)
     }[a]
+
+def val_to_action(val):
+    """
+        The function acts as a
+        lookup to decide how to
+        move the robot in the
+        grid depending on which
+        move the robot makes.
+
+        Arguments:
+            param1: robot's action
+
+        Returns:
+            int: value of the movement in the array
+    """
+    return {
+        0 : 'up',
+        1 : 'down',
+        2 : 'right',
+        3 : 'left'
+    }[val]
 
 def env_move_det(s, a):
     """
@@ -196,21 +222,16 @@ def agt_choose(s, epsilon):
         Returns:
             str: action to take
     """
+    key = str(s[0]) + str(s[1])
+
     # Evaluates the greedy policy
     if random(1, 11) / 10.0 <= 1 - epsilon:
-
-        # Policies array
-        policies = []
-
         # Compute all possible policies
         # given the current state
-        for a in cf.data['actions']:
-            policies.append(env_reward(s, a))
-
         # Return best action
-        return cf.data['actions'][policies.index(max(policies))]
+        return val_to_action(QVALS[key].index(max(QVAL[key])))
     else:
-        return cf.data['actions'][random(0, 4)]
+        return val_to_action(QVALS[key].index(QVAL[key][random(0, 4)]))
 
 def agt_learn_sarsa(alpha, s, a, r, next_s, next_a):
     """
@@ -303,7 +324,7 @@ def main():
             learning = episode < cf.data['episodes'] - 50
             eps = cf.data['epsilon'] if learning else 0
             cumulative_gamma = 1
-            s = (3, 0)
+            s = (0, 0)
             a = agt_choose(s, eps)
 
             for timestep in range(cf.data['T']):
@@ -320,16 +341,15 @@ def main():
                         agt_learn_final(cf.data['alpha'], s, a, r)
                     else:
                         agt_learn_sarsa(cf.data['alpha'], s, a, r, next_s, next_a)
-                        # agt_learn_q(cf.data['alpha'], s, a, r, next_s)
-                # time.sleep(2)
+                        agt_learn_q(cf.data['alpha'], s, a, r, next_s)
 
                 a = next_a
                 s = next_s
-                # print(rewards)
 
     print(rewards)
     plt.plot(rewards)
-    plt.axis([0, 500, -100, 200])
+    plt.axis("equal")
+    # plt.axis([0, 500, -100, 1500])
     plt.show()
 
     # print("ORTOGONAL: ", get_ortogonal_move('right'))
