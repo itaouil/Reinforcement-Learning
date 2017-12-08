@@ -23,7 +23,7 @@ data = {
     'gamma'     : 0.99,
 
     # Epochs
-    'epochs'     : 500,
+    'epochs'     : 20,
 
     # Episodes
     'episodes'  : 500,
@@ -32,6 +32,6 @@ data = {
 
     'alpha'     : 0.1,
 
-    'T'         : 24
+    'T'         : 48
 
 }

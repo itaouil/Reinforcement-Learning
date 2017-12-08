@@ -89,7 +89,7 @@ def create_qvalues():
     # QLEARNING algorithms
     for row in range(cf.data['X']):
         for col in range(cf.data['Y']):
-            QVAL[str(row) + str(col)] = [110, 110, 110, 110]
+            QVAL[str(row) + str(col)] = [120, 120, 120, 120]
 
 def actions(a):
     """
@@ -179,8 +179,7 @@ def env_reward(s, a):
     """
     # New state
     reward_state = env_move_det(s, a)
-    print(reward_state[0], reward_state[1])
-    # return STATES[reward_state[0]][reward_state[1]]
+    return STATES[reward_state[0]][reward_state[1]]
 
 def agt_choose(s, epsilon):
     """
@@ -232,8 +231,11 @@ def agt_learn_sarsa(alpha, s, a, r, next_s, next_a):
     curr_a_index = cf.data['actions'].index(a)
     next_a_index = cf.data['actions'].index(next_a)
 
+    print("Before: ", QVAL[key_curr][curr_a_index])
     # Update sarsa's values, baby !
     QVAL[key_curr][curr_a_index] = (1 - alpha) * QVAL[key_curr][curr_a_index] + alpha * (r + cf.data['gamma'] * QVAL[key_next][next_a_index])
+    print("After: ", QVAL[key_curr][curr_a_index])
+    # time.sleep(2)
 
 def agt_learn_q(alpha, s, a, r, next_s):
     """
@@ -286,54 +288,58 @@ def main():
     # Intialise domain
     # and state-action
     # value pairs
-    # create_domain()
-    # create_qvalues()
-    #
-    # # Clear rewards
-    # rewards = [0 for x in range(cf.data['episodes'])]
-    #
-    # for epoch in range(cf.data['epochs']):
-    #     print(epoch)
-    #     agt_reset_value()
-    #
-    #     for episode in range(cf.data['episodes']):
-    #
-    #         learning = episode < cf.data['episodes'] - 50
-    #         eps = cf.data['epsilon'] if learning else 0
-    #         cumulative_gamma = 1
-    #         s = (3, 0)
-    #         a = agt_choose(s, eps)
-    #
-    #         for timestep in range(2 * cf.data['T']):
-    #             next_s = env_move_det(s, a)
-    #             # next_s = env_move_sto(s, a)
-    #             r = env_reward(s, a)
-    #             rewards[episode] += (cumulative_gamma * r) / cf.data['epochs']
-    #             cumulative_gamma *= cf.data['gamma']
-    #             next_a = agt_choose(next_s, eps)
-    #             if learning:
-    #                 if STATES[next_s[0], next_s[1]] == 100 or timestep == cf.data['T'] - 1:
-    #                     agt_learn_final(cf.data['alpha'], s, a, r)
-    #                 else:
-    #                     agt_learn_sarsa(cf.data['alpha'], s, a, r, next_s, next_a)
-    #                     # agt_learn_q(cf.data['alpha'], s, a, r, next_s)
-    #
-    #             a = next_a
-    #             s = next_s
-    #             # print(rewards)
-    #
-    # print(rewards)
-    # plt.plot(rewards)
-    # plt.axis('equal')
-    # plt.show()
+    create_domain()
+    create_qvalues()
 
-    print("ORTOGONAL: ", get_ortogonal_move('down'))
-    print("STATES: ", STATES)
-    print("QVALUES: ", QVAL)
-    print("DET MOVE: ", env_move_det((0, 5), 'down'))
-    print("STO MOVE: ", env_move_sto((0, 5), 'down'))
-    print("ENV REWARD: ", env_reward((0, 5), 'left'))
-    print("AGT CHOOSE: ", agt_choose((0, 5), 0.1))
+    # Clear rewards
+    rewards = [0 for x in range(cf.data['episodes'])]
+
+    for epoch in range(cf.data['epochs']):
+        print(epoch)
+        agt_reset_value()
+
+        for episode in range(cf.data['episodes']):
+
+            learning = episode < cf.data['episodes'] - 50
+            eps = cf.data['epsilon'] if learning else 0
+            cumulative_gamma = 1
+            s = (3, 0)
+            a = agt_choose(s, eps)
+
+            for timestep in range(cf.data['T']):
+                next_s = env_move_det(s, a)
+                # next_s = env_move_sto(s, a)
+                r = env_reward(s, a)
+                rewards[episode] += (cumulative_gamma * r) / cf.data['epochs']
+                cumulative_gamma *= cf.data['gamma']
+                next_a = agt_choose(next_s, eps)
+                print("Move: ", s, a)
+                if learning:
+                    if STATES[next_s[0]][next_s[1]] == 100 or timestep == cf.data['T'] - 1:
+                        print("I am in an absorbing state: ", STATES[next_s[0]][next_s[1]], timestep)
+                        agt_learn_final(cf.data['alpha'], s, a, r)
+                    else:
+                        agt_learn_sarsa(cf.data['alpha'], s, a, r, next_s, next_a)
+                        # agt_learn_q(cf.data['alpha'], s, a, r, next_s)
+                # time.sleep(2)
+
+                a = next_a
+                s = next_s
+                # print(rewards)
+
+    print(rewards)
+    plt.plot(rewards)
+    plt.axis([0, 500, -100, 200])
+    plt.show()
+
+    # print("ORTOGONAL: ", get_ortogonal_move('right'))
+    # print("STATES: ", STATES)
+    # print("QVALUES: ", QVAL, len(QVAL))
+    # print("DET MOVE: ", env_move_det((2, 3), 'right'))
+    # print("STO MOVE: ", env_move_sto((2, 3), 'right'))
+    # print("ENV REWARD: ", env_reward((2, 1), 'left'))
+    # print("AGT CHOOSE: ", agt_choose((2, 3), 0.2))
+    # print("SARSA: ", agt_learn_sarsa())
 
 if __name__ == '__main__':
     main()
