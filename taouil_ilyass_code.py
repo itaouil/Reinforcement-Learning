@@ -8,7 +8,6 @@
 # Import modules
 import math
 import time
-import thread
 import numpy as np
 import matplotlib.pyplot as plt
 
@@ -16,8 +15,8 @@ import matplotlib.pyplot as plt
 import config as cf
 
 # Global variables
-QVAL   = {}
-STATES = []
+QVAL    = {}
+STATES  = []
 
 def random(low, high):
     """
@@ -95,7 +94,7 @@ def create_qvalues():
     # QLEARNING algorithms
     for row in range(cf.data['X']):
         for col in range(cf.data['Y']):
-            QVAL[str(row) + str(col)] = [101, 101, 101, 101]
+            QVAL[str(row) + str(col)] = [150.0, 150.0, 150.0, 150.0]
 
 def actions(a):
     """
@@ -307,12 +306,17 @@ def agt_reset_value():
     """
     create_qvalues()
 
-def sarsa():
+def main():
+    # Intialise domain
+    # and state-action
+    # value pairs
+    create_domain()
+    create_qvalues()
+
     # Clear rewards
     rewards = [0 for x in range(cf.data['episodes'])]
 
     for epoch in range(cf.data['epochs']):
-        print("Sarsa: ", epoch)
 
         # Clean QLVAL dictionaries
         agt_reset_value()
@@ -340,83 +344,16 @@ def sarsa():
                 next_a = agt_choose(next_s, eps)
 
                 if learning:
-                    if STATES[next_s[0]][next_s[1]] == 100 or timestep == cf.data['T'] - 1:
-                        # Run final and stop learning
+                    if STATES[next_s[0]][next_s[1]] in [100, -100] or timestep == cf.data['T'] - 1:
+                        # Run final and move to next episode
                         agt_learn_final(cf.data['alpha'], s, a, r)
                         break
                     else:
-                        # agt_learn_sarsa(cf.data['alpha'], s, a, r, next_s, next_a)
-                        agt_learn_q(cf.data['alpha'], s, a, r, next_s)
-
-                if STATES[next_s[0]][next_s[1]] == 100:
-                    break
+                        # agt_learn_q(cf.data['alpha'], s, a, r, next_s)
+                        agt_learn_sarsa(cf.data['alpha'], s, a, r, next_s, next_a)
 
                 a = next_a
                 s = next_s
-
-def qlearning():
-    # Clear rewards
-    rewards = [0 for x in range(cf.data['episodes'])]
-
-    for epoch in range(cf.data['epochs']):
-        print(epoch)
-        # Clean QLVAL dictionaries
-        agt_reset_value()
-
-        for episode in range(cf.data['episodes']):
-
-            # Defining the type of learning
-            learning = episode < cf.data['episodes'] - 50
-            eps = (1 - float(episode)/cf.data['episodes']) if learning else 0
-            cumulative_gamma = 1
-
-            # Get initial state and action
-            s = (0, 0)
-            a = agt_choose(s, eps)
-
-            for timestep in range(cf.data['T']):
-                # Get next state
-                next_s = env_move_det(s, a)
-                # next_s = env_move_sto(s, a)
-
-                # Compute reward and add it
-                r = env_reward(s, a)
-                rewards[episode] += (cumulative_gamma * r) / cf.data['epochs']
-                cumulative_gamma *= cf.data['gamma']
-                next_a = agt_choose(next_s, eps)
-
-                if learning:
-                    if STATES[next_s[0]][next_s[1]] == 100 or timestep == cf.data['T'] - 1:
-                        # Run final and stop learning
-                        agt_learn_final(cf.data['alpha'], s, a, r)
-                        break
-                    else:
-                        # agt_learn_sarsa(cf.data['alpha'], s, a, r, next_s, next_a)
-                        agt_learn_q(cf.data['alpha'], s, a, r, next_s)
-
-                if STATES[next_s[0]][next_s[1]] == 100:
-                    break
-
-                a = next_a
-                s = next_s
-
-def main():
-    # Intialise domain
-    # and state-action
-    # value pairs
-    create_domain()
-    create_qvalues()
-
-    # Rewards sarsa
-    sarsa_rewards = sarsa()
-
-    # Rewards qlearning
-    qlear_rewards = qlearning()
-
-    plt.plot(rewards, 'b')
-    # plt.axis("equal")
-    # plt.axis([0, 500, -200, 2000])
-    plt.show()
 
 if __name__ == '__main__':
     main()

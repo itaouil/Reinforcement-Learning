@@ -26,7 +26,7 @@ data = {
     'epochs'    : 500,
 
     # Episodes
-    'episodes'  : 800,
+    'episodes'  : 500,
 
     'epsilon'   : 0.1,
 
